@@ -1,5 +1,7 @@
 # Claude Code Codex Handoff
 
+[![Validate](https://github.com/Eilen6316/claude-code-codex-handoff/actions/workflows/validate.yml/badge.svg)](https://github.com/Eilen6316/claude-code-codex-handoff/actions/workflows/validate.yml)
+
 [English README](./README.md)
 
 一个面向 Claude Code 的插件，用于把“模糊任务”变成“基于仓库上下文的结构化 handoff”，再交给 Codex 执行。
@@ -186,13 +188,21 @@ Keep the implementation easy to review and avoid large refactors.
 ```text
 .
 ├── .claude-plugin/plugin.json
+├── .github/
+│   ├── workflows/validate.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── agents/repo-analyst.md
 ├── docs/WORKFLOW.en.md
 ├── docs/WORKFLOW.zh-CN.md
 ├── docs/examples/
+├── eval/fixtures/
 ├── skills/handoff/SKILL.md
 ├── skills/review/SKILL.md
-└── scripts/validate.sh
+├── scripts/validate.sh
+├── scripts/eval-fixtures.sh
+├── CONTRIBUTING.md
+└── CONTRIBUTING.zh-CN.md
 ```
 
 ## 校验
@@ -214,8 +224,13 @@ bash scripts/validate.sh
 - handoff 示例是否包含完整结构化 section
 - 如果本机装了 `claude`，则额外执行一次官方 CLI 级别的验证
 
-脚本已经是 CI-ready 的，但仓库里没有直接提交 `.github/workflows/*`，因为部分
-GitHub PAT 在没有 `workflow` scope 的情况下无法推送工作流文件。
+脚本已经是 CI-ready 的。仓库中包含了 GitHub Actions 工作流
+`.github/workflows/validate.yml`，会在 push 和 PR 时自动运行。
+
+## 贡献
+
+请阅读 [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md) 了解本地配置、验证、
+提交规范和 PR 流程。
 
 ## 文档
 

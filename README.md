@@ -1,5 +1,7 @@
 # Claude Code Codex Handoff
 
+[![Validate](https://github.com/Eilen6316/claude-code-codex-handoff/actions/workflows/validate.yml/badge.svg)](https://github.com/Eilen6316/claude-code-codex-handoff/actions/workflows/validate.yml)
+
 [简体中文说明](./README.zh-CN.md)
 
 A Claude Code plugin for repo-grounded handoff to Codex.
@@ -190,13 +192,21 @@ More examples:
 ```text
 .
 ├── .claude-plugin/plugin.json
+├── .github/
+│   ├── workflows/validate.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── agents/repo-analyst.md
 ├── docs/WORKFLOW.en.md
 ├── docs/WORKFLOW.zh-CN.md
 ├── docs/examples/
+├── eval/fixtures/
 ├── skills/handoff/SKILL.md
 ├── skills/review/SKILL.md
-└── scripts/validate.sh
+├── scripts/validate.sh
+├── scripts/eval-fixtures.sh
+├── CONTRIBUTING.md
+└── CONTRIBUTING.zh-CN.md
 ```
 
 ## Validation
@@ -218,8 +228,13 @@ The validation script checks:
 - fixture-based example completeness for handoff output sections
 - optional Claude CLI validation when `claude` is installed locally
 
-The script is CI-ready, but no workflow file is included because some GitHub
-tokens cannot push `.github/workflows/*` without the extra `workflow` scope.
+The script is CI-ready. A GitHub Actions workflow is included at
+`.github/workflows/validate.yml` and runs automatically on push and PR.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on local setup, validation,
+commit conventions, and the PR process.
 
 ## Documentation
 

@@ -8,12 +8,15 @@ allowed-tools: Read Grep Glob Bash
 Review the current implementation changes with this focus: $ARGUMENTS
 
 Workflow:
-1. Inspect the current git state first with read-only commands.
-2. Review the relevant diff, changed files, and any nearby code needed for context.
-3. Do not edit files.
-4. Prefer bug-finding, regression risks, missing tests, and incorrect assumptions over
+1. Check if `.codex-handoff/latest.md` exists. If it does, read it to obtain the
+   original acceptance criteria, constraints, and review focus from the handoff.
+   Use these as a cross-reference when evaluating the implementation.
+2. Inspect the current git state first with read-only commands.
+3. Review the relevant diff, changed files, and any nearby code needed for context.
+4. Do not edit files.
+5. Prefer bug-finding, regression risks, missing tests, and incorrect assumptions over
    style commentary.
-5. Match the user's language. If the user asked in Chinese, answer in Chinese.
+6. Match the user's language. If the user asked in Chinese, answer in Chinese.
 
 Output exactly these top-level sections:
 
@@ -40,3 +43,6 @@ Rules:
   `REWORK` -> implementation should be revised before approval.
 - When possible, tie findings back to an acceptance criterion, constraint, or review
   focus item from the original handoff.
+- If `.codex-handoff/latest.md` was available, include a `# Handoff coverage` section
+  after `# Next step` that lists each acceptance criterion from the handoff and marks
+  it as MET, NOT_MET, or UNTESTED.

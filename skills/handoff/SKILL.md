@@ -23,6 +23,11 @@ Workflow:
    that must remain stable.
 8. If a section has no meaningful content, say `None identified.` instead of leaving
    it blank.
+9. Include a metadata line at the very top of the output before the first section:
+   `<!-- codex-handoff v1.4.0 | YYYY-MM-DD -->` using the current date.
+10. After generating the handoff, save the complete output (from `# Goal` to the end)
+    to `.codex-handoff/latest.md` so the review skill can reference it later. Create
+    the `.codex-handoff/` directory if it does not exist.
 
 Output exactly these top-level sections:
 

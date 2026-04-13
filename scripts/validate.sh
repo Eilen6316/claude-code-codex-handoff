@@ -5,11 +5,20 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+echo "==> Checking dependencies"
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: jq is required but not installed." >&2
+  echo "Install it with: brew install jq (macOS) or apt-get install jq (Ubuntu)" >&2
+  exit 1
+fi
+
 echo "==> Checking required files"
 required_files=(
   ".claude-plugin/plugin.json"
   "README.md"
   "README.zh-CN.md"
+  "CONTRIBUTING.md"
+  "CONTRIBUTING.zh-CN.md"
   "agents/repo-analyst.md"
   "eval/fixtures/handoff-bugfix-en.json"
   "eval/fixtures/handoff-bugfix-zh-CN.json"
@@ -49,7 +58,7 @@ frontmatter_files=(
 )
 
 for path in "${frontmatter_files[@]}"; do
-  first_line="$(sed -n '1p' "$path")"
+  first_line="$(sed -n '1p' "$path" | tr -d '\xEF\xBB\xBF\r')"
   if [[ "$first_line" != "---" ]]; then
     echo "Frontmatter missing in $path" >&2
     exit 1

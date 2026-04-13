@@ -89,10 +89,10 @@
 用户原始需求：
 
 ```text
-Add retry with exponential backoff to the token refresh flow used by authenticated API requests.
-Reuse any existing retry helper if available.
-Do not change public API behavior.
-Add or update tests.
+给 token 刷新流程加上带指数退避的重试机制，该流程用于已认证的 API 请求。
+如果已有重试工具函数，优先复用。
+不要改变公开 API 的行为。
+补充或更新测试。
 ```
 
 Claude 先分析仓库，再输出结构化 brief。
@@ -101,10 +101,10 @@ Claude 先分析仓库，再输出结构化 brief。
 
 ```markdown
 # Goal
-Add retry with exponential backoff to the token refresh path used during authenticated API requests.
+给已认证 API 请求所使用的 token 刷新路径添加带指数退避的重试机制。
 
 # Repo context
-The current token refresh implementation appears centered in `src/auth/refresh.ts`, and is likely invoked from the authenticated API client in `src/api/client.ts`. There is already a reusable retry utility in `src/lib/retry.ts`. Existing tests for refresh behavior appear in `tests/auth/refresh.test.ts`.
+当前 token 刷新实现集中在 `src/auth/refresh.ts`，可能从 `src/api/client.ts` 中的已认证 API 客户端调用。`src/lib/retry.ts` 中已有一个可复用的重试工具。`tests/auth/refresh.test.ts` 中有现有的刷新行为测试。
 
 # Files inspected
 - `read`: `src/auth/refresh.ts`
@@ -115,32 +115,32 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - `searched`: `tests/auth/**`
 
 # Constraints
-- Reuse the existing retry helper if it is a good fit
-- Do not change the public API of the auth client
-- Preserve existing error shape unless a test update is clearly justified
-- Keep retry logic scoped to token refresh only
-- Avoid introducing retry loops around all API requests
+- 如果现有重试工具合适，优先复用
+- 不要改变 auth 客户端的公开 API
+- 除非有充分理由更新测试，否则保持现有错误结构不变
+- 重试逻辑仅限于 token 刷新
+- 不要对所有 API 请求引入重试循环
 
 # Do not touch
-- Public auth client interfaces exposed to external callers
-- Token storage semantics outside the refresh path
+- 暴露给外部调用方的公开 auth 客户端接口
+- 刷新路径之外的 token 存储语义
 
 # Non-goals
-- Do not redesign authentication flow
-- Do not change token storage semantics
-- Do not add retry behavior to unrelated network calls
-- Do not refactor broad auth architecture unless necessary for a small extraction
+- 不要重新设计认证流程
+- 不要更改 token 存储语义
+- 不要给无关的网络调用添加重试行为
+- 除非为了小规模提取，否则不要重构整体 auth 架构
 
 # Ambiguities
-- Confirm whether `src/lib/retry.ts` can express the required backoff policy as-is
-- Verify how transient refresh failures are currently classified before widening retry behavior
+- 确认 `src/lib/retry.ts` 是否能直接表达所需的退避策略
+- 在扩大重试范围前，验证当前瞬时刷新失败是如何分类的
 
 # Acceptance criteria
-- Token refresh retries on transient failure using exponential backoff
-- Retry count and delay policy are explicit in code
-- Non-transient failures still fail promptly
-- Existing authenticated request flow continues to behave the same from the caller perspective
-- Tests cover success after retry, terminal failure, and non-retriable failure behavior
+- Token 刷新在遇到瞬时失败时使用指数退避进行重试
+- 重试次数和延迟策略在代码中有明确定义
+- 非瞬时失败仍然快速失败
+- 从调用方角度看，现有认证请求流程行为保持不变
+- 测试覆盖：重试后成功、达到最大重试次数后终止、不可重试错误的行为
 
 # Files likely involved
 - `src/auth/refresh.ts`
@@ -149,31 +149,31 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - `tests/auth/refresh.test.ts`
 
 # Test plan
-- Update or add unit tests for refresh retry behavior
-- Verify success when the first refresh attempt fails transiently and a later one succeeds
-- Verify failure after max retry attempts
-- Verify non-retriable errors do not loop
-- Run targeted auth-related tests first, then broader affected suite if available
+- 更新或新增 token 刷新重试行为的单元测试
+- 验证第一次刷新瞬时失败后再次成功的场景
+- 验证达到最大重试次数后的失败场景
+- 验证不可重试错误不会循环
+- 先运行 auth 相关的定向测试，再运行更广泛的受影响测试套件
 
 # Review focus
-- Is retry scoped only to refresh, not all outbound requests?
-- Are backoff parameters reasonable and readable?
-- Is existing helper reused cleanly instead of duplicating retry logic?
-- Are public behavior and error contracts preserved?
-- Are tests deterministic rather than timing-fragile?
+- 重试是否仅限于刷新，而非所有出站请求？
+- 退避参数是否合理且可读？
+- 是否干净地复用了现有工具而非重复实现？
+- 公开行为和错误契约是否保持不变？
+- 测试是否确定性的而非依赖时序？
 
 # CODEX_HANDOFF
-Implement retry with exponential backoff for token refresh in the authenticated request flow.
-Start by confirming whether `src/lib/retry.ts` can be reused directly. Prefer reusing it over introducing a second retry abstraction.
-Make the smallest safe change centered on `src/auth/refresh.ts`, with only minimal integration changes in `src/api/client.ts` if needed.
-Preserve public behavior for callers. Do not broaden retry behavior to unrelated request paths.
-Do not touch public auth client interfaces or token storage semantics outside the refresh path.
-Before changing retry behavior, verify whether `src/lib/retry.ts` can express the required backoff policy and how transient refresh failures are currently classified.
-Add or update tests in `tests/auth/refresh.test.ts` to cover:
-1. success after one transient refresh failure
-2. terminal failure after max retries
-3. immediate failure for non-retriable errors
-Keep the implementation easy to review and avoid large refactors.
+在已认证请求流程中为 token 刷新实现带指数退避的重试。
+先确认 `src/lib/retry.ts` 是否可以直接复用，优先复用而非引入第二个重试抽象。
+以 `src/auth/refresh.ts` 为中心做最小安全变更，如有需要仅对 `src/api/client.ts` 做最少的集成修改。
+保持调用方看到的公开行为不变。不要将重试扩展到无关的请求路径。
+不要触碰公开 auth 客户端接口或刷新路径之外的 token 存储语义。
+在修改重试行为之前，先验证 `src/lib/retry.ts` 能否表达所需退避策略，以及瞬时刷新失败目前是如何分类的。
+在 `tests/auth/refresh.test.ts` 中补充或更新测试，覆盖：
+1. 一次瞬时刷新失败后成功
+2. 达到最大重试次数后终止失败
+3. 不可重试错误立即失败
+保持实现易于审查，避免大范围重构。
 ```
 
 更多示例：

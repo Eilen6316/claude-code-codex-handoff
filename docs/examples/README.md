@@ -17,5 +17,6 @@ Each example includes:
 
 - a raw user request
 - repository findings
+- files inspected
 - a structured brief
 - a final `CODEX_HANDOFF`

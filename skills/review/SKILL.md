@@ -17,6 +17,8 @@ Workflow:
 
 Output exactly these top-level sections:
 
+# Verdict
+
 # Summary
 
 # Findings
@@ -25,9 +27,16 @@ Output exactly these top-level sections:
 
 # Missing tests
 
-# Recommendation
+# Next step
 
 Rules:
 - If there are no findings, say so explicitly under `# Findings`.
 - Refer to file paths and symbols precisely.
 - Keep the review focused on real impact, not cosmetic preferences.
+- `# Verdict` must be exactly one of: `APPROVE`, `MINOR_FIX`, `REWORK`.
+- `# Next step` must map cleanly to the verdict:
+  `APPROVE` -> ship or merge,
+  `MINOR_FIX` -> small follow-up changes,
+  `REWORK` -> implementation should be revised before approval.
+- When possible, tie findings back to an acceptance criterion, constraint, or review
+  focus item from the original handoff.

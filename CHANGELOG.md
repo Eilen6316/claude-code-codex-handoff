@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- Added auditable `repo-analyst` output with explicit `Files inspected` and `Assumptions and unknowns`.
+- Extended the handoff schema with `Do not touch` and `Ambiguities`.
+- Upgraded the review skill to emit a fixed verdict: `APPROVE`, `MINOR_FIX`, or `REWORK`.
+- Added fixture-based example evaluation under `eval/fixtures/` plus a local eval script.
+
 ## 1.1.0
 
 - Reworked both READMEs with a stronger front-page value proposition and a faster quickstart.

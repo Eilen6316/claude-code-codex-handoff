@@ -33,7 +33,7 @@
 - `/codex-handoff:handoff [任务]`
   手动触发的 handoff skill，会基于仓库上下文生成结构化 `CODEX_HANDOFF`，供 `/codex:rescue` 使用。
 - `/codex-handoff:review [范围]`
-  手动触发的 review skill，用于在实现完成后做二次审查。
+  手动触发的 review skill，用于在实现完成后做二次审查，并输出固定 verdict：`APPROVE`、`MINOR_FIX`、`REWORK`。
 - `scripts/validate.sh`
   结构校验脚本，可本地运行，也方便接入你自己的 CI。
 
@@ -79,6 +79,9 @@
    /codex-handoff:review 审查当前 diff 的回归风险和缺失测试
    ```
 
+   审查结果会以固定 verdict 收尾：
+   `APPROVE`、`MINOR_FIX` 或 `REWORK`。
+
 ## 示例
 
 用户原始需求：
@@ -101,6 +104,14 @@ Add retry with exponential backoff to the token refresh path used during authent
 # Repo context
 The current token refresh implementation appears centered in `src/auth/refresh.ts`, and is likely invoked from the authenticated API client in `src/api/client.ts`. There is already a reusable retry utility in `src/lib/retry.ts`. Existing tests for refresh behavior appear in `tests/auth/refresh.test.ts`.
 
+# Files inspected
+- `read`: `src/auth/refresh.ts`
+- `read`: `src/api/client.ts`
+- `read`: `src/lib/retry.ts`
+- `read`: `tests/auth/refresh.test.ts`
+- `searched`: `src/auth/**`
+- `searched`: `tests/auth/**`
+
 # Constraints
 - Reuse the existing retry helper if it is a good fit
 - Do not change the public API of the auth client
@@ -108,11 +119,19 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - Keep retry logic scoped to token refresh only
 - Avoid introducing retry loops around all API requests
 
+# Do not touch
+- Public auth client interfaces exposed to external callers
+- Token storage semantics outside the refresh path
+
 # Non-goals
 - Do not redesign authentication flow
 - Do not change token storage semantics
 - Do not add retry behavior to unrelated network calls
 - Do not refactor broad auth architecture unless necessary for a small extraction
+
+# Ambiguities
+- Confirm whether `src/lib/retry.ts` can express the required backoff policy as-is
+- Verify how transient refresh failures are currently classified before widening retry behavior
 
 # Acceptance criteria
 - Token refresh retries on transient failure using exponential backoff
@@ -146,6 +165,8 @@ Implement retry with exponential backoff for token refresh in the authenticated 
 Start by confirming whether `src/lib/retry.ts` can be reused directly. Prefer reusing it over introducing a second retry abstraction.
 Make the smallest safe change centered on `src/auth/refresh.ts`, with only minimal integration changes in `src/api/client.ts` if needed.
 Preserve public behavior for callers. Do not broaden retry behavior to unrelated request paths.
+Do not touch public auth client interfaces or token storage semantics outside the refresh path.
+Before changing retry behavior, verify whether `src/lib/retry.ts` can express the required backoff policy and how transient refresh failures are currently classified.
 Add or update tests in `tests/auth/refresh.test.ts` to cover:
 1. success after one transient refresh failure
 2. terminal failure after max retries
@@ -180,6 +201,7 @@ Keep the implementation easy to review and avoid large refactors.
 ```bash
 claude plugins validate .
 claude --plugin-dir . agents
+bash scripts/eval-fixtures.sh
 bash scripts/validate.sh
 ```
 
@@ -188,6 +210,7 @@ bash scripts/validate.sh
 - `plugin.json` 是否是合法 JSON
 - 必需文件是否存在
 - agent/skill 是否有 frontmatter
+- handoff 示例是否包含完整结构化 section
 - 如果本机装了 `claude`，则额外执行一次官方 CLI 级别的验证
 
 脚本已经是 CI-ready 的，但仓库里没有直接提交 `.github/workflows/*`，因为部分

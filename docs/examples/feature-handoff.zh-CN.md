@@ -22,6 +22,15 @@
 
 当前 token refresh 实现大概率集中在 `src/auth/refresh.ts`，并由 `src/api/client.ts` 中的认证 API client 调用。仓库里已有可复用的重试工具 `src/lib/retry.ts`。现有 refresh 行为相关测试大概率在 `tests/auth/refresh.test.ts`。
 
+### Files inspected
+
+- `read`: `src/auth/refresh.ts`
+- `read`: `src/api/client.ts`
+- `read`: `src/lib/retry.ts`
+- `read`: `tests/auth/refresh.test.ts`
+- `searched`: `src/auth/**`
+- `searched`: `tests/auth/**`
+
 ### Constraints
 
 - 如可行，优先复用现有 retry helper
@@ -30,12 +39,22 @@
 - 重试逻辑只应作用于 token refresh
 - 不要把所有 API 请求都包进重试循环
 
+### Do not touch
+
+- 对外暴露的 auth client 接口
+- refresh 路径之外的 token 存储语义
+
 ### Non-goals
 
 - 不要重构整个认证流程
 - 不要改变 token 存储语义
 - 不要给无关网络请求增加重试
 - 除非为了小范围抽取必须，否则不要做大规模 auth 重构
+
+### Ambiguities
+
+- 还需要确认 `src/lib/retry.ts` 是否能直接表达目标 backoff 策略
+- 还需要确认哪些 refresh 失败会被当前实现视为“瞬时失败”
 
 ### Acceptance criteria
 
@@ -74,6 +93,8 @@
 先确认 `src/lib/retry.ts` 是否可以直接复用；优先复用，不要新建第二套 retry 抽象。
 以 `src/auth/refresh.ts` 为主要改动点，只在必要时对 `src/api/client.ts` 做最小集成改动。
 保持调用方可见行为不变，不要把重试范围扩展到无关请求路径。
+不要修改对外暴露的 auth client 接口，也不要碰 refresh 路径之外的 token 存储语义。
+在动手前确认 `src/lib/retry.ts` 是否能表达目标 backoff 策略，以及当前实现如何区分瞬时失败与不可重试失败。
 在 `tests/auth/refresh.test.ts` 中新增或更新测试，覆盖：
 1. 一次瞬时失败后重试成功
 2. 达到最大重试次数后失败

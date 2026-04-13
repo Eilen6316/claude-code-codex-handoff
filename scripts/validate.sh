@@ -11,11 +11,16 @@ required_files=(
   "README.md"
   "README.zh-CN.md"
   "agents/repo-analyst.md"
+  "eval/fixtures/handoff-bugfix-en.json"
+  "eval/fixtures/handoff-bugfix-zh-CN.json"
+  "eval/fixtures/handoff-feature-en.json"
+  "eval/fixtures/handoff-feature-zh-CN.json"
   "docs/examples/README.md"
   "docs/examples/feature-handoff.en.md"
   "docs/examples/feature-handoff.zh-CN.md"
   "docs/examples/bugfix-handoff.en.md"
   "docs/examples/bugfix-handoff.zh-CN.md"
+  "scripts/eval-fixtures.sh"
   "skills/handoff/SKILL.md"
   "skills/review/SKILL.md"
   "docs/WORKFLOW.en.md"
@@ -58,6 +63,9 @@ plugin_version="$(jq -r '.version' .claude-plugin/plugin.json)"
   echo "Plugin version is missing" >&2
   exit 1
 }
+
+echo "==> Running fixture evals"
+bash scripts/eval-fixtures.sh
 
 if command -v claude >/dev/null 2>&1; then
   echo "==> Running Claude CLI plugin validation"

@@ -1,0 +1,34 @@
+{
+  "name": "codex-handoff",
+  "owner": {
+    "name": "Eilen6316",
+    "email": "xinsai6316@gmail.com"
+  },
+  "metadata": {
+    "description": "Claude Code plugin for repo-grounded Codex handoff and review workflows."
+  },
+  "plugins": [
+    {
+      "name": "codex-handoff",
+      "source": "./",
+      "description": "Claude Code plugin for repo-grounded Codex handoff and review workflows.",
+      "version": "1.4.0",
+      "author": {
+        "name": "Eilen6316"
+      },
+      "homepage": "https://github.com/Eilen6316/claude-code-codex-handoff",
+      "repository": "https://github.com/Eilen6316/claude-code-codex-handoff",
+      "license": "MIT",
+      "keywords": [
+        "claude-code",
+        "codex",
+        "handoff",
+        "plugin",
+        "review",
+        "agent-workflow",
+        "code-review",
+        "agent-collaboration"
+      ]
+    }
+  ]
+}

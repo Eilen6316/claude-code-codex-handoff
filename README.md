@@ -47,7 +47,29 @@ Workflow:
 - `scripts/validate.sh`
   Structural validation plus optional Claude CLI checks.
 
-## 60-second quickstart
+## Installation
+
+### Option A: Install from plugin marketplace (recommended)
+
+1. Add the marketplace:
+
+   ```text
+   /plugin marketplace add Eilen6316/claude-code-codex-handoff
+   ```
+
+2. Install the plugin:
+
+   ```text
+   /plugin install codex-handoff@codex-handoff
+   ```
+
+3. Reload plugins:
+
+   ```text
+   /reload-plugins
+   ```
+
+### Option B: Load locally with `--plugin-dir`
 
 1. Clone the repository:
 
@@ -56,13 +78,15 @@ Workflow:
    cd claude-code-codex-handoff
    ```
 
-2. Load the plugin locally:
+2. Load the plugin for the current session:
 
    ```bash
    claude --plugin-dir .
    ```
 
-3. Optional but recommended: install the official Codex bridge:
+## 60-second quickstart
+
+1. Optional but recommended: install the official Codex bridge:
 
    ```text
    /plugin marketplace add openai/codex-plugin-cc
@@ -71,19 +95,19 @@ Workflow:
    /codex:setup
    ```
 
-4. Generate a handoff:
+2. Generate a handoff:
 
    ```text
    /codex-handoff:handoff add retry protection to the login flow without regressing existing auth state handling
    ```
 
-5. Copy the final `CODEX_HANDOFF` section into:
+3. Copy the final `CODEX_HANDOFF` section into:
 
    ```text
    /codex:rescue
    ```
 
-6. Review the result:
+4. Review the result:
 
    ```text
    /codex-handoff:review review the current diff for regressions and missing tests
@@ -196,6 +220,7 @@ More examples:
 ```text
 .
 ├── .claude-plugin/plugin.json
+├── .claude-plugin/marketplace.json
 ├── .github/
 │   ├── workflows/validate.yml
 │   ├── ISSUE_TEMPLATE/

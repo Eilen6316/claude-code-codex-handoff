@@ -43,7 +43,29 @@
 - `scripts/validate.sh`
   结构校验脚本，可本地运行，也方便接入你自己的 CI。
 
-## 60 秒快速开始
+## 安装
+
+### 方式 A：通过插件市场安装（推荐）
+
+1. 添加市场：
+
+   ```text
+   /plugin marketplace add Eilen6316/claude-code-codex-handoff
+   ```
+
+2. 安装插件：
+
+   ```text
+   /plugin install codex-handoff@codex-handoff
+   ```
+
+3. 重新加载插件：
+
+   ```text
+   /reload-plugins
+   ```
+
+### 方式 B：使用 `--plugin-dir` 本地加载
 
 1. 克隆仓库：
 
@@ -52,13 +74,15 @@
    cd claude-code-codex-handoff
    ```
 
-2. 在本地加载插件：
+2. 在当前会话中加载插件：
 
    ```bash
    claude --plugin-dir .
    ```
 
-3. 可选但推荐：安装官方 `codex-plugin-cc`：
+## 60 秒快速开始
+
+1. 可选但推荐：安装官方 `codex-plugin-cc`：
 
    ```text
    /plugin marketplace add openai/codex-plugin-cc
@@ -67,19 +91,19 @@
    /codex:setup
    ```
 
-4. 生成 handoff：
+2. 生成 handoff：
 
    ```text
    /codex-handoff:handoff 给登录流程增加重试保护，同时不要破坏现有 auth state 行为
    ```
 
-5. 复制最后的 `CODEX_HANDOFF`，交给：
+3. 复制最后的 `CODEX_HANDOFF`，交给：
 
    ```text
    /codex:rescue
    ```
 
-6. 实现完成后审查：
+4. 实现完成后审查：
 
    ```text
    /codex-handoff:review 审查当前 diff 的回归风险和缺失测试
@@ -192,6 +216,7 @@ Claude 先分析仓库，再输出结构化 brief。
 ```text
 .
 ├── .claude-plugin/plugin.json
+├── .claude-plugin/marketplace.json
 ├── .github/
 │   ├── workflows/validate.yml
 │   ├── ISSUE_TEMPLATE/

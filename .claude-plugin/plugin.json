@@ -1,0 +1,19 @@
+{
+  "name": "codex-handoff",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for repo-grounded handoff briefs that delegate implementation to Codex.",
+  "author": {
+    "name": "Eilen6316",
+    "url": "https://github.com/Eilen6316"
+  },
+  "homepage": "https://github.com/Eilen6316/claude-code-codex-handoff",
+  "repository": "https://github.com/Eilen6316/claude-code-codex-handoff",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "handoff",
+    "plugin",
+    "review"
+  ]
+}

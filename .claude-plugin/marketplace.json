@@ -12,7 +12,7 @@
       "name": "codex-handoff",
       "source": "./",
       "description": "Claude Code plugin for repo-grounded Codex handoff and review workflows.",
-      "version": "1.4.0",
+      "version": "1.1.0",
       "author": {
         "name": "Eilen6316"
       },

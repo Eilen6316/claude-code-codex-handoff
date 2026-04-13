@@ -2,26 +2,162 @@
 
 [English README](./README.md)
 
-`codex-handoff` 是一个面向 Claude Code 的插件，用来实现“先由 Claude 读仓库、定范围、写 handoff，再交给 Codex 实现，最后再做审查”的工作流：
+一个面向 Claude Code 的插件，用于把“模糊任务”变成“基于仓库上下文的结构化 handoff”，再交给 Codex 执行。
 
-`你 -> Claude 分析仓库 -> Claude 生成 Codex brief -> Codex 实现 -> Claude 或 Codex 审查`
+它解决的不是普通 prompt 润色问题，而是这个问题：
 
-这个插件对应你想要的模式 A：
+`你 -> Claude 先读仓库 -> Claude 生成 CODEX_HANDOFF -> Codex 实现 -> Claude 或 Codex 审查`
 
-- Claude 负责规划、技术判断、验收标准和审查
-- Codex 负责具体实现
-- handoff 基于真实仓库上下文，而不是只靠一句模糊提示
+## 为什么要做这个插件
 
-## 功能
+直接把需求丢给实现模型，通常会丢失很多仓库相关上下文：
+
+- 架构边界
+- 项目里的本地约定
+- 附近调用路径
+- 隐含约束
+- 测试预期
+- 审查重点
+
+这个插件把这些信息前置出来。
+
+职责分工：
+
+- Claude：规划、技术判断、验收标准、审查
+- Codex：具体实现
+
+## 你会得到什么
 
 - `codex-handoff:repo-analyst`
-  只读代码分析子代理，用于找文件、梳理结构、提炼约束、生成测试建议。
+  只读分析子代理，用于读代码、找相关文件、梳理结构、提炼约束、给出测试建议。
 - `/codex-handoff:handoff [任务]`
-  手动触发的 handoff skill，会先分析仓库，再输出结构化 `CODEX_HANDOFF`，供 `/codex:rescue` 使用。
+  手动触发的 handoff skill，会基于仓库上下文生成结构化 `CODEX_HANDOFF`，供 `/codex:rescue` 使用。
 - `/codex-handoff:review [范围]`
-  手动触发的 review skill，用于在 Codex 改完后做二次审查。
+  手动触发的 review skill，用于在实现完成后做二次审查。
 - `scripts/validate.sh`
-  可在本地运行、也方便接入 CI 的验证脚本。
+  结构校验脚本，可本地运行，也方便接入你自己的 CI。
+
+## 60 秒快速开始
+
+1. 克隆仓库：
+
+   ```bash
+   git clone https://github.com/Eilen6316/claude-code-codex-handoff.git
+   cd claude-code-codex-handoff
+   ```
+
+2. 在本地加载插件：
+
+   ```bash
+   claude --plugin-dir .
+   ```
+
+3. 可选但推荐：安装官方 `codex-plugin-cc`：
+
+   ```text
+   /plugin marketplace add openai/codex-plugin-cc
+   /plugin install codex@openai-codex
+   /reload-plugins
+   /codex:setup
+   ```
+
+4. 生成 handoff：
+
+   ```text
+   /codex-handoff:handoff 给登录流程增加重试保护，同时不要破坏现有 auth state 行为
+   ```
+
+5. 复制最后的 `CODEX_HANDOFF`，交给：
+
+   ```text
+   /codex:rescue
+   ```
+
+6. 实现完成后审查：
+
+   ```text
+   /codex-handoff:review 审查当前 diff 的回归风险和缺失测试
+   ```
+
+## 示例
+
+用户原始需求：
+
+```text
+Add retry with exponential backoff to the token refresh flow used by authenticated API requests.
+Reuse any existing retry helper if available.
+Do not change public API behavior.
+Add or update tests.
+```
+
+Claude 先分析仓库，再输出结构化 brief。
+
+代表性的 `CODEX_HANDOFF`：
+
+```markdown
+# Goal
+Add retry with exponential backoff to the token refresh path used during authenticated API requests.
+
+# Repo context
+The current token refresh implementation appears centered in `src/auth/refresh.ts`, and is likely invoked from the authenticated API client in `src/api/client.ts`. There is already a reusable retry utility in `src/lib/retry.ts`. Existing tests for refresh behavior appear in `tests/auth/refresh.test.ts`.
+
+# Constraints
+- Reuse the existing retry helper if it is a good fit
+- Do not change the public API of the auth client
+- Preserve existing error shape unless a test update is clearly justified
+- Keep retry logic scoped to token refresh only
+- Avoid introducing retry loops around all API requests
+
+# Non-goals
+- Do not redesign authentication flow
+- Do not change token storage semantics
+- Do not add retry behavior to unrelated network calls
+- Do not refactor broad auth architecture unless necessary for a small extraction
+
+# Acceptance criteria
+- Token refresh retries on transient failure using exponential backoff
+- Retry count and delay policy are explicit in code
+- Non-transient failures still fail promptly
+- Existing authenticated request flow continues to behave the same from the caller perspective
+- Tests cover success after retry, terminal failure, and non-retriable failure behavior
+
+# Files likely involved
+- `src/auth/refresh.ts`
+- `src/api/client.ts`
+- `src/lib/retry.ts`
+- `tests/auth/refresh.test.ts`
+
+# Test plan
+- Update or add unit tests for refresh retry behavior
+- Verify success when the first refresh attempt fails transiently and a later one succeeds
+- Verify failure after max retry attempts
+- Verify non-retriable errors do not loop
+- Run targeted auth-related tests first, then broader affected suite if available
+
+# Review focus
+- Is retry scoped only to refresh, not all outbound requests?
+- Are backoff parameters reasonable and readable?
+- Is existing helper reused cleanly instead of duplicating retry logic?
+- Are public behavior and error contracts preserved?
+- Are tests deterministic rather than timing-fragile?
+
+# CODEX_HANDOFF
+Implement retry with exponential backoff for token refresh in the authenticated request flow.
+Start by confirming whether `src/lib/retry.ts` can be reused directly. Prefer reusing it over introducing a second retry abstraction.
+Make the smallest safe change centered on `src/auth/refresh.ts`, with only minimal integration changes in `src/api/client.ts` if needed.
+Preserve public behavior for callers. Do not broaden retry behavior to unrelated request paths.
+Add or update tests in `tests/auth/refresh.test.ts` to cover:
+1. success after one transient refresh failure
+2. terminal failure after max retries
+3. immediate failure for non-retriable errors
+Keep the implementation easy to review and avoid large refactors.
+```
+
+更多示例：
+
+- [Feature handoff 示例](./docs/examples/feature-handoff.zh-CN.md)
+- [Bugfix handoff 示例](./docs/examples/bugfix-handoff.zh-CN.md)
+- [示例索引](./docs/examples/README.md)
 
 ## 仓库结构
 
@@ -31,20 +167,15 @@
 ├── agents/repo-analyst.md
 ├── docs/WORKFLOW.en.md
 ├── docs/WORKFLOW.zh-CN.md
+├── docs/examples/
 ├── skills/handoff/SKILL.md
 ├── skills/review/SKILL.md
 └── scripts/validate.sh
 ```
 
-## 本地加载
+## 校验
 
-在当前目录加载插件启动 Claude Code：
-
-```bash
-claude --plugin-dir .
-```
-
-建议先跑这几条检查：
+运行：
 
 ```bash
 claude plugins validate .
@@ -52,74 +183,27 @@ claude --plugin-dir . agents
 bash scripts/validate.sh
 ```
 
-## 与 Codex 联动的推荐配置
+验证脚本会检查：
 
-先安装官方 `codex-plugin-cc`：
+- `plugin.json` 是否是合法 JSON
+- 必需文件是否存在
+- agent/skill 是否有 frontmatter
+- 如果本机装了 `claude`，则额外执行一次官方 CLI 级别的验证
 
-```text
-/plugin marketplace add openai/codex-plugin-cc
-/plugin install codex@openai-codex
-/reload-plugins
-/codex:setup
-```
-
-## 典型使用方式
-
-1. 先生成基于仓库的 handoff：
-
-   ```text
-   /codex-handoff:handoff 给登录流程增加重试保护，同时不要破坏现有 auth state 行为
-   ```
-
-2. 复制最后的 `CODEX_HANDOFF` 段落，交给 Codex：
-
-   ```text
-   /codex:rescue <粘贴 CODEX_HANDOFF>
-   ```
-
-3. 实现完成后做审查：
-
-   ```text
-   /codex-handoff:review 审查当前 diff 的回归风险和缺失测试
-   ```
-
-   或者直接：
-
-   ```text
-   /codex:review
-   ```
-
-## handoff 输出结构
-
-`/codex-handoff:handoff` 目标输出这些部分：
-
-- `Goal`
-- `Repo context`
-- `Constraints`
-- `Non-goals`
-- `Acceptance criteria`
-- `Files likely involved`
-- `Test plan`
-- `Review focus`
-- `CODEX_HANDOFF`
+脚本已经是 CI-ready 的，但仓库里没有直接提交 `.github/workflows/*`，因为部分
+GitHub PAT 在没有 `workflow` scope 的情况下无法推送工作流文件。
 
 ## 文档
 
 - [Workflow Guide (English)](./docs/WORKFLOW.en.md)
 - [工作流指南（简体中文）](./docs/WORKFLOW.zh-CN.md)
+- [示例索引](./docs/examples/README.md)
 
-## 校验
+## 当前状态
 
-仓库内置的验证脚本会检查：
+已经可用，而且是有明确偏好的版本。
 
-- `plugin.json` 是否是合法 JSON
-- 关键文件是否存在
-- agent/skill 文件是否有 frontmatter
-- 如果本机装了 `claude`，则额外做一次官方 CLI 级别的验证和代理加载检查
-
-这份仓库没有直接附带 `.github/workflows/*`，因为部分 GitHub PAT 在没有
-`workflow` scope 的情况下无法推送工作流文件；但 `scripts/validate.sh`
-已经可以直接接入你自己的 CI。
+最适合那些希望让 Claude 先做“repo-aware 规划”，再把实现交给 Codex 的个人或团队。
 
 ## 许可证
 

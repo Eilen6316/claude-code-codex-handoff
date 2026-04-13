@@ -2,28 +2,168 @@
 
 [简体中文说明](./README.zh-CN.md)
 
-`codex-handoff` is a Claude Code plugin for repo-grounded handoff and review workflows:
+A Claude Code plugin for repo-grounded handoff to Codex.
 
-`You -> Claude analyzes repo -> Claude writes Codex brief -> Codex implements -> Claude or Codex reviews`
+Instead of sending a rough coding idea straight to Codex, this plugin lets Claude
+inspect the repository first, identify relevant files and constraints, and produce
+a structured implementation brief for Codex to execute.
 
-This plugin is designed for Mode A:
+## Why this exists
 
-- Claude acts as planner, tech lead, and reviewer
-- Codex acts as implementer
-- The handoff is grounded in the current repository instead of a vague prompt
+Direct implementation prompts often miss repository-specific context:
 
-## Features
+- architecture boundaries
+- local conventions
+- nearby call paths
+- implicit constraints
+- test expectations
+- review hotspots
+
+This plugin makes that explicit.
+
+Role split:
+
+- Claude: planner, tech lead, reviewer
+- Codex: implementer
+
+Workflow:
+
+`You -> Claude analyzes repo -> Claude writes CODEX_HANDOFF -> Codex implements -> Claude or Codex reviews`
+
+## What you get
 
 - `codex-handoff:repo-analyst`
-  A read-only subagent for file discovery, architecture mapping, constraints, and test planning.
+  A read-only subagent for repository inspection, architecture mapping, constraints, and test planning.
 - `/codex-handoff:handoff [task]`
-  A manual skill that inspects the repo and produces a structured `CODEX_HANDOFF` brief for `/codex:rescue`.
+  A manual skill that generates a repo-grounded `CODEX_HANDOFF` brief for `/codex:rescue`.
 - `/codex-handoff:review [scope]`
-  A manual skill for post-implementation review of current changes or a specific area.
+  A manual review skill for checking the current implementation against intent, risks, and missing tests.
 - `scripts/validate.sh`
-  Structural validation plus optional local Claude CLI checks.
+  Structural validation plus optional Claude CLI checks.
 
-## Repository layout
+## 60-second quickstart
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/Eilen6316/claude-code-codex-handoff.git
+   cd claude-code-codex-handoff
+   ```
+
+2. Load the plugin locally:
+
+   ```bash
+   claude --plugin-dir .
+   ```
+
+3. Optional but recommended: install the official Codex bridge:
+
+   ```text
+   /plugin marketplace add openai/codex-plugin-cc
+   /plugin install codex@openai-codex
+   /reload-plugins
+   /codex:setup
+   ```
+
+4. Generate a handoff:
+
+   ```text
+   /codex-handoff:handoff add retry protection to the login flow without regressing existing auth state handling
+   ```
+
+5. Copy the final `CODEX_HANDOFF` section into:
+
+   ```text
+   /codex:rescue
+   ```
+
+6. Review the result:
+
+   ```text
+   /codex-handoff:review review the current diff for regressions and missing tests
+   ```
+
+## Example
+
+User request:
+
+```text
+Add retry with exponential backoff to the token refresh flow used by authenticated API requests.
+Reuse any existing retry helper if available.
+Do not change public API behavior.
+Add or update tests.
+```
+
+Claude analyzes the repository and produces a structured brief.
+
+Representative `CODEX_HANDOFF`:
+
+```markdown
+# Goal
+Add retry with exponential backoff to the token refresh path used during authenticated API requests.
+
+# Repo context
+The current token refresh implementation appears centered in `src/auth/refresh.ts`, and is likely invoked from the authenticated API client in `src/api/client.ts`. There is already a reusable retry utility in `src/lib/retry.ts`. Existing tests for refresh behavior appear in `tests/auth/refresh.test.ts`.
+
+# Constraints
+- Reuse the existing retry helper if it is a good fit
+- Do not change the public API of the auth client
+- Preserve existing error shape unless a test update is clearly justified
+- Keep retry logic scoped to token refresh only
+- Avoid introducing retry loops around all API requests
+
+# Non-goals
+- Do not redesign authentication flow
+- Do not change token storage semantics
+- Do not add retry behavior to unrelated network calls
+- Do not refactor broad auth architecture unless necessary for a small extraction
+
+# Acceptance criteria
+- Token refresh retries on transient failure using exponential backoff
+- Retry count and delay policy are explicit in code
+- Non-transient failures still fail promptly
+- Existing authenticated request flow continues to behave the same from the caller perspective
+- Tests cover success after retry, terminal failure, and non-retriable failure behavior
+
+# Files likely involved
+- `src/auth/refresh.ts`
+- `src/api/client.ts`
+- `src/lib/retry.ts`
+- `tests/auth/refresh.test.ts`
+
+# Test plan
+- Update or add unit tests for refresh retry behavior
+- Verify success when the first refresh attempt fails transiently and a later one succeeds
+- Verify failure after max retry attempts
+- Verify non-retriable errors do not loop
+- Run targeted auth-related tests first, then broader affected suite if available
+
+# Review focus
+- Is retry scoped only to refresh, not all outbound requests?
+- Are backoff parameters reasonable and readable?
+- Is existing helper reused cleanly instead of duplicating retry logic?
+- Are public behavior and error contracts preserved?
+- Are tests deterministic rather than timing-fragile?
+
+# CODEX_HANDOFF
+Implement retry with exponential backoff for token refresh in the authenticated request flow.
+Start by confirming whether `src/lib/retry.ts` can be reused directly. Prefer reusing it over introducing a second retry abstraction.
+Make the smallest safe change centered on `src/auth/refresh.ts`, with only minimal integration changes in `src/api/client.ts` if needed.
+Preserve public behavior for callers. Do not broaden retry behavior to unrelated request paths.
+Add or update tests in `tests/auth/refresh.test.ts` to cover:
+1. success after one transient refresh failure
+2. terminal failure after max retries
+3. immediate failure for non-retriable errors
+Keep the implementation easy to review and avoid large refactors.
+```
+
+More examples:
+
+- [Feature handoff example](./docs/examples/feature-handoff.en.md)
+- [Bugfix handoff example](./docs/examples/bugfix-handoff.en.md)
+- [Examples index](./docs/examples/README.md)
+
+## Included files
 
 ```text
 .
@@ -31,20 +171,15 @@ This plugin is designed for Mode A:
 ├── agents/repo-analyst.md
 ├── docs/WORKFLOW.en.md
 ├── docs/WORKFLOW.zh-CN.md
+├── docs/examples/
 ├── skills/handoff/SKILL.md
 ├── skills/review/SKILL.md
 └── scripts/validate.sh
 ```
 
-## Install for local development
+## Validation
 
-Run Claude Code with this plugin loaded from the current directory:
-
-```bash
-claude --plugin-dir .
-```
-
-Useful checks:
+Run:
 
 ```bash
 claude plugins validate .
@@ -52,74 +187,28 @@ claude --plugin-dir . agents
 bash scripts/validate.sh
 ```
 
-## Recommended setup with Codex
-
-Install the official Codex bridge in Claude Code:
-
-```text
-/plugin marketplace add openai/codex-plugin-cc
-/plugin install codex@openai-codex
-/reload-plugins
-/codex:setup
-```
-
-## Typical workflow
-
-1. Generate a repo-grounded handoff:
-
-   ```text
-   /codex-handoff:handoff add retry protection to the login flow without regressing existing auth state handling
-   ```
-
-2. Copy the final `CODEX_HANDOFF` section into Codex:
-
-   ```text
-   /codex:rescue <paste CODEX_HANDOFF>
-   ```
-
-3. Review the result:
-
-   ```text
-   /codex-handoff:review review the current diff for regressions and missing tests
-   ```
-
-   Or use:
-
-   ```text
-   /codex:review
-   ```
-
-## Output contract
-
-`/codex-handoff:handoff` targets these sections:
-
-- `Goal`
-- `Repo context`
-- `Constraints`
-- `Non-goals`
-- `Acceptance criteria`
-- `Files likely involved`
-- `Test plan`
-- `Review focus`
-- `CODEX_HANDOFF`
-
-## Documentation
-
-- [Workflow Guide (English)](./docs/WORKFLOW.en.md)
-- [工作流指南（简体中文）](./docs/WORKFLOW.zh-CN.md)
-
-## Validation
-
-The included validation script checks:
+The validation script checks:
 
 - plugin manifest JSON validity
 - required repository files
 - frontmatter presence for agents and skills
 - optional Claude CLI validation when `claude` is installed locally
 
-The validation script is CI-ready, but no workflow file is included in the repository
-because some GitHub tokens cannot push `.github/workflows/*` without the extra
-`workflow` scope.
+The script is CI-ready, but no workflow file is included because some GitHub
+tokens cannot push `.github/workflows/*` without the extra `workflow` scope.
+
+## Documentation
+
+- [Workflow Guide (English)](./docs/WORKFLOW.en.md)
+- [工作流指南（简体中文）](./docs/WORKFLOW.zh-CN.md)
+- [Examples index](./docs/examples/README.md)
+
+## Status
+
+Usable and intentionally opinionated.
+
+Best for teams or individuals who want Claude to act as a repo-aware planner
+before handing implementation to Codex.
 
 ## License
 

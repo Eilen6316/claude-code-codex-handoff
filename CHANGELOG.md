@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0
+
+- Reworked both READMEs with a stronger front-page value proposition and a faster quickstart.
+- Added concrete handoff examples for feature work and bug fixes under `docs/examples/`.
+- Added an examples index to make it easier to understand what a good `CODEX_HANDOFF` looks like.
+- Prepared the repository for a public `1.1.0` release.
+
 ## 1.0.0
 
 - Promoted the plugin to a stable `1.0.0` release.

@@ -4,7 +4,11 @@
 
 [English README](./README.md)
 
-一个面向 Claude Code 的插件，用于把“模糊任务”变成“基于仓库上下文的结构化 handoff”，再交给 Codex 执行。
+一个面向 Claude Code 的插件，用于把”模糊任务”变成”基于仓库上下文的结构化 handoff”，再交给 Codex 执行。
+
+## Demo
+
+![codex-handoff demo](./docs/assets/demo.gif)
 
 它解决的不是普通 prompt 润色问题，而是这个问题：
 

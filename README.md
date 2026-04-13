@@ -6,6 +6,10 @@
 
 A Claude Code plugin for repo-grounded handoff to Codex.
 
+## Demo
+
+![codex-handoff demo](./docs/assets/demo.gif)
+
 Instead of sending a rough coding idea straight to Codex, this plugin lets Claude
 inspect the repository first, identify relevant files and constraints, and produce
 a structured implementation brief for Codex to execute.

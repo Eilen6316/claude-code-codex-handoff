@@ -182,6 +182,7 @@ More examples:
 
 - [Feature handoff example](./docs/examples/feature-handoff.en.md)
 - [Bugfix handoff example](./docs/examples/bugfix-handoff.en.md)
+- [Review output example](./docs/examples/review-output.en.md)
 - [Examples index](./docs/examples/README.md)
 
 ## Included files

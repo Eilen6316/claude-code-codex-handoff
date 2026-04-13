@@ -178,6 +178,7 @@ Keep the implementation easy to review and avoid large refactors.
 
 - [Feature handoff 示例](./docs/examples/feature-handoff.zh-CN.md)
 - [Bugfix handoff 示例](./docs/examples/bugfix-handoff.zh-CN.md)
+- [Review 输出示例](./docs/examples/review-output.zh-CN.md)
 - [示例索引](./docs/examples/README.md)
 
 ## 仓库结构

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+- Added bilingual review examples under `docs/examples/`.
+- Added fixture coverage for review output structure.
+- Extended repository validation to include review examples and review fixtures.
+
 ## 1.2.0
 
 - Added auditable `repo-analyst` output with explicit `Files inspected` and `Assumptions and unknowns`.

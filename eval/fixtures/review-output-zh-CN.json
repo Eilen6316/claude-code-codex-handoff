@@ -1,0 +1,17 @@
+{
+  "id": "review-output-zh-CN",
+  "language": "zh-CN",
+  "example_file": "docs/examples/review-output.zh-CN.md",
+  "required_strings": [
+    "## 原始 review 请求",
+    "## 实现上下文",
+    "## 结构化 review 结果",
+    "### Verdict",
+    "MINOR_FIX",
+    "### Summary",
+    "### Findings",
+    "### Regression risks",
+    "### Missing tests",
+    "### Next step"
+  ]
+}

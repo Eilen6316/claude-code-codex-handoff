@@ -12,7 +12,10 @@
 
 它解决的不是普通 prompt 润色问题，而是这个问题：
 
-`你 -> Claude 先读仓库 -> Claude 生成 CODEX_HANDOFF -> Codex 实现 -> Claude 或 Codex 审查`
+`你 -> Claude 先读仓库 -> Claude 生成 CODEX_HANDOFF -> Codex 实现 -> Claude 审查`
+
+安装了 [Codex 插件](https://github.com/openai/codex-plugin-cc) 后，
+整个流程一条命令自动跑完，无需手动复制粘贴。
 
 ## 为什么要做这个插件
 
@@ -36,8 +39,9 @@
 
 - `codex-handoff:repo-analyst`
   只读分析子代理，用于读代码、找相关文件、梳理结构、提炼约束、给出测试建议。
-- `/codex-handoff:handoff [任务]`
-  手动触发的 handoff skill，会基于仓库上下文生成结构化 `CODEX_HANDOFF`，供 `/codex:rescue` 使用。
+- `/codex-handoff:handoff [--no-exec] [任务]`
+  生成基于仓库上下文的结构化 `CODEX_HANDOFF`，然后自动交给 Codex 实现，
+  实现完成后自动触发 review。使用 `--no-exec` 可以只生成 handoff 而不执行。
 - `/codex-handoff:review [范围]`
   手动触发的 review skill，用于在实现完成后做二次审查，并输出固定 verdict：`APPROVE`、`MINOR_FIX`、`REWORK`。
 - `scripts/validate.sh`
@@ -82,7 +86,7 @@
 
 ## 60 秒快速开始
 
-1. 可选但推荐：安装官方 `codex-plugin-cc`：
+1. 安装 Codex 插件（自动执行需要）：
 
    ```text
    /plugin marketplace add openai/codex-plugin-cc
@@ -91,26 +95,22 @@
    /codex:setup
    ```
 
-2. 生成 handoff：
+2. 一条命令搞定 —— Claude 分析、Codex 实现、Claude 审查：
 
    ```text
    /codex-handoff:handoff 给登录流程增加重试保护，同时不要破坏现有 auth state 行为
    ```
 
-3. 复制最后的 `CODEX_HANDOFF`，交给：
+   这会自动完成：
+   - 生成结构化 `CODEX_HANDOFF` 简报
+   - 通过 `/codex:rescue` 将简报交给 Codex 实现
+   - 触发 `/codex-handoff:review` 审查实现结果
+
+3. 如果只想生成 handoff 而不执行：
 
    ```text
-   /codex:rescue
+   /codex-handoff:handoff --no-exec 给登录流程增加重试保护
    ```
-
-4. 实现完成后审查：
-
-   ```text
-   /codex-handoff:review 审查当前 diff 的回归风险和缺失测试
-   ```
-
-   审查结果会以固定 verdict 收尾：
-   `APPROVE`、`MINOR_FIX` 或 `REWORK`。
 
 ## 示例
 

@@ -34,14 +34,19 @@ Role split:
 
 Workflow:
 
-`You -> Claude analyzes repo -> Claude writes CODEX_HANDOFF -> Codex implements -> Claude or Codex reviews`
+`You -> Claude analyzes repo -> Claude writes CODEX_HANDOFF -> Codex implements -> Claude reviews`
+
+When the [Codex plugin](https://github.com/openai/codex-plugin-cc) is installed,
+the entire pipeline runs automatically with a single command. No manual copy-paste needed.
 
 ## What you get
 
 - `codex-handoff:repo-analyst`
   A read-only subagent for repository inspection, architecture mapping, constraints, and test planning.
-- `/codex-handoff:handoff [task]`
-  A manual skill that generates a repo-grounded `CODEX_HANDOFF` brief for `/codex:rescue`.
+- `/codex-handoff:handoff [--no-exec] [task]`
+  Generates a repo-grounded `CODEX_HANDOFF` brief, then automatically hands it to Codex
+  for implementation and triggers a review when done. Use `--no-exec` to only generate
+  the handoff without invoking Codex.
 - `/codex-handoff:review [scope]`
   A manual review skill for checking the current implementation against intent, risks, and missing tests, with a fixed verdict: `APPROVE`, `MINOR_FIX`, or `REWORK`.
 - `scripts/validate.sh`
@@ -86,7 +91,7 @@ Workflow:
 
 ## 60-second quickstart
 
-1. Optional but recommended: install the official Codex bridge:
+1. Install the Codex plugin (required for automatic execution):
 
    ```text
    /plugin marketplace add openai/codex-plugin-cc
@@ -95,26 +100,22 @@ Workflow:
    /codex:setup
    ```
 
-2. Generate a handoff:
+2. Run a single command — Claude analyzes, Codex implements, Claude reviews:
 
    ```text
    /codex-handoff:handoff add retry protection to the login flow without regressing existing auth state handling
    ```
 
-3. Copy the final `CODEX_HANDOFF` section into:
+   This will automatically:
+   - Generate the structured `CODEX_HANDOFF` brief
+   - Pass it to Codex via `/codex:rescue` for implementation
+   - Trigger `/codex-handoff:review` to review the result
+
+3. To only generate the handoff without executing:
 
    ```text
-   /codex:rescue
+   /codex-handoff:handoff --no-exec add retry protection to the login flow
    ```
-
-4. Review the result:
-
-   ```text
-   /codex-handoff:review review the current diff for regressions and missing tests
-   ```
-
-   The review result ends with a fixed verdict:
-   `APPROVE`, `MINOR_FIX`, or `REWORK`.
 
 ## Example
 

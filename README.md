@@ -1,62 +1,56 @@
 # Claude Code Codex Handoff
 
-中文简介：这个插件把 Claude 放在前置分析位，让它先读仓库、定范围、写结构化 brief，再把实现交给 Codex。
+[简体中文说明](./README.zh-CN.md)
 
-`codex-handoff` is a minimal Claude Code plugin for the workflow:
+`codex-handoff` is a Claude Code plugin for repo-grounded handoff and review workflows:
 
-`You -> Claude analyzes repo -> Claude writes Codex brief -> Codex implements -> Claude/Codex reviews`
+`You -> Claude analyzes repo -> Claude writes Codex brief -> Codex implements -> Claude or Codex reviews`
 
-The first release intentionally stays small:
+This plugin is designed for Mode A:
 
-- A read-only `repo-analyst` subagent for codebase inspection
-- A manual `/codex-handoff:handoff` skill for generating an implementation-ready brief
-- No hooks yet, so the core workflow stays easy to inspect and iterate
+- Claude acts as planner, tech lead, and reviewer
+- Codex acts as implementer
+- The handoff is grounded in the current repository instead of a vague prompt
 
-## Why this exists
+## Features
 
-`codex-plugin-cc` is a good bridge from Claude Code to Codex, but it does not replace
-front-end planning. This plugin fills the missing step:
+- `codex-handoff:repo-analyst`
+  A read-only subagent for file discovery, architecture mapping, constraints, and test planning.
+- `/codex-handoff:handoff [task]`
+  A manual skill that inspects the repo and produces a structured `CODEX_HANDOFF` brief for `/codex:rescue`.
+- `/codex-handoff:review [scope]`
+  A manual skill for post-implementation review of current changes or a specific area.
+- `scripts/validate.sh`
+  Structural validation plus optional local Claude CLI checks.
 
-1. Claude inspects the current repository.
-2. Claude produces a structured handoff grounded in real files and constraints.
-3. You paste the final `CODEX_HANDOFF` section into `/codex:rescue`.
-
-That keeps responsibilities clean:
-
-- Claude: scope, constraints, acceptance criteria, review focus
-- Codex: implementation
-- Claude or Codex: review
-
-## Plugin contents
+## Repository layout
 
 ```text
 .
 ├── .claude-plugin/plugin.json
 ├── agents/repo-analyst.md
+├── docs/WORKFLOW.en.md
+├── docs/WORKFLOW.zh-CN.md
 ├── skills/handoff/SKILL.md
-├── CHANGELOG.md
-├── LICENSE
-└── README.md
+├── skills/review/SKILL.md
+└── scripts/validate.sh
 ```
 
-## Local development
+## Install for local development
 
-Run Claude Code with the plugin loaded from this directory:
+Run Claude Code with this plugin loaded from the current directory:
 
 ```bash
 claude --plugin-dir .
 ```
 
-Then reload after edits:
+Useful checks:
 
 ```bash
-/reload-plugins
+claude plugins validate .
+claude --plugin-dir . agents
+bash scripts/validate.sh
 ```
-
-You should see:
-
-- `/codex-handoff:handoff` in `/help`
-- `codex-handoff:repo-analyst` in `/agents`
 
 ## Recommended setup with Codex
 
@@ -69,37 +63,35 @@ Install the official Codex bridge in Claude Code:
 /codex:setup
 ```
 
-## Usage
+## Typical workflow
 
-Run the handoff skill with a concrete task:
+1. Generate a repo-grounded handoff:
 
-```text
-/codex-handoff:handoff add retry protection to the login flow and make sure the existing auth state handling still works
-```
+   ```text
+   /codex-handoff:handoff add retry protection to the login flow without regressing existing auth state handling
+   ```
 
-The skill will tell Claude to:
+2. Copy the final `CODEX_HANDOFF` section into Codex:
 
-1. Inspect the repository with the read-only analyst agent
-2. Summarize current behavior and risks
-3. Produce a structured brief with a final `CODEX_HANDOFF` section
+   ```text
+   /codex:rescue <paste CODEX_HANDOFF>
+   ```
 
-Take the `CODEX_HANDOFF` section and pass it to Codex:
+3. Review the result:
 
-```text
-/codex:rescue <paste the CODEX_HANDOFF section here>
-```
+   ```text
+   /codex-handoff:review review the current diff for regressions and missing tests
+   ```
 
-After implementation, review with either:
+   Or use:
 
-```text
-/codex:review
-```
-
-or your normal Claude review flow.
+   ```text
+   /codex:review
+   ```
 
 ## Output contract
 
-`/codex-handoff:handoff` always aims to produce these sections:
+`/codex-handoff:handoff` targets these sections:
 
 - `Goal`
 - `Repo context`
@@ -111,21 +103,23 @@ or your normal Claude review flow.
 - `Review focus`
 - `CODEX_HANDOFF`
 
-The final section is deliberately compact so it can be pasted directly into
-`/codex:rescue`.
+## Documentation
 
-## Design notes
+- [Workflow Guide (English)](./docs/WORKFLOW.en.md)
+- [工作流指南（简体中文）](./docs/WORKFLOW.zh-CN.md)
 
-- The analyst agent is read-only by design.
-- The handoff skill is manual by design.
-- Hooks are excluded from `0.1.0` on purpose. They are useful for review gates,
-  but not a good place for the core planning logic.
+## Validation
 
-## Roadmap
+The included validation script checks:
 
-- Optional `codex:review` helper skill
-- Optional stop-hook review gate
-- Task-specific handoff templates for bugs, refactors, and feature work
+- plugin manifest JSON validity
+- required repository files
+- frontmatter presence for agents and skills
+- optional Claude CLI validation when `claude` is installed locally
+
+The validation script is CI-ready, but no workflow file is included in the repository
+because some GitHub tokens cannot push `.github/workflows/*` without the extra
+`workflow` scope.
 
 ## License
 

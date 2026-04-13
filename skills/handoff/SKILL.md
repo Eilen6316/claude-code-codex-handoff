@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Generate a repo-grounded Codex handoff brief for a coding task. Use manually when you want Claude to inspect the current project, define scope, and produce an implementation-ready brief for Codex.
+description: Generate a repo-grounded Codex handoff brief. 先由 Claude 阅读代码并整理结构化实现说明，再交给 Codex。
 argument-hint: "[task]"
 disable-model-invocation: true
 allowed-tools: Agent Read Grep Glob Bash
@@ -16,6 +16,9 @@ Workflow:
    change. Do not edit files. Do not run write commands.
 4. Prefer concrete file paths, symbols, commands, and test targets when known.
 5. Ask follow-up questions only if missing information blocks safe execution.
+6. Match the user's language. If the user asked in Chinese, the final output should
+   be in Chinese except for code, file paths, commands, and literal section titles
+   that must remain stable.
 
 Output exactly these top-level sections:
 

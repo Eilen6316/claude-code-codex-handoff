@@ -1,7 +1,7 @@
 {
   "name": "codex-handoff",
-  "version": "0.1.0",
-  "description": "Claude Code plugin for repo-grounded handoff briefs that delegate implementation to Codex.",
+  "version": "1.0.0",
+  "description": "Claude Code plugin for repo-grounded Codex handoff and review workflows.",
   "author": {
     "name": "Eilen6316",
     "url": "https://github.com/Eilen6316"
@@ -14,6 +14,7 @@
     "codex",
     "handoff",
     "plugin",
-    "review"
+    "review",
+    "agent-workflow"
   ]
 }

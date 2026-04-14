@@ -8,12 +8,41 @@ Use Claude as a repo-aware planner and reviewer, and use Codex as the implementa
 
 1. Start with a concrete task statement.
 2. Run `/codex-handoff:handoff [task]`.
-3. Let Claude inspect the repository with `repo-analyst`.
+3. Claude inspects the repository with `repo-analyst` and generates a structured `CODEX_HANDOFF`.
 4. Review the analysis summary, especially `Files inspected` and any `Ambiguities`.
-5. Copy the final `CODEX_HANDOFF` section into `/codex:rescue`.
-6. After Codex finishes, run `/codex-handoff:review [scope]` or `/codex:review`.
+5. The handoff automatically passes the `CODEX_HANDOFF` section to `/codex:rescue` for Codex to implement.
+6. After Codex finishes, `/codex-handoff:review` is automatically triggered to review the result.
 7. Use the review verdict to decide the next action:
    `APPROVE`, `MINOR_FIX`, or `REWORK`.
+
+The handoff output is saved to `.codex-handoff/latest.md` so the review skill can
+cross-reference the original acceptance criteria, constraints, and review focus.
+A timestamped copy is also saved to `.codex-handoff/history/` for traceability.
+
+## Manual mode
+
+Use `--no-exec` to generate the handoff without invoking Codex:
+
+```text
+/codex-handoff:handoff --no-exec [task]
+```
+
+You can then manually copy the `CODEX_HANDOFF` section into `/codex:rescue`, or
+review the handoff quality before deciding whether to proceed.
+
+## Codex execution control
+
+Pass execution flags to control how Codex runs:
+
+- `--background` — run Codex in the background
+- `--model <model>` — specify a Codex model (e.g. `gpt-5.4-mini`, `spark`)
+- `--effort <level>` — specify reasoning effort (`none` / `minimal` / `low` / `medium` / `high` / `xhigh`)
+
+Example:
+
+```text
+/codex-handoff:handoff --background --effort high add retry to the token refresh flow
+```
 
 ## When to use this plugin
 

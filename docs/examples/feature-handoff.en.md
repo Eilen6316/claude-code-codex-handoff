@@ -1,30 +1,24 @@
 # Feature Handoff Example
 
-## Raw user request
+> User request: Add retry with exponential backoff to the token refresh flow used
+> by authenticated API requests. Reuse any existing retry helper if available. Do
+> not change public API behavior. Add or update tests.
 
-Add retry with exponential backoff to the token refresh flow used by authenticated
-API requests. Reuse any existing retry helper if available. Do not change public
-API behavior. Add or update tests.
+Below is one possible handoff output. The structure may vary by task complexity.
 
-## Repository findings
+---
 
-- Token refresh logic appears to live in `src/auth/refresh.ts`
-- The authenticated request wrapper likely calls refresh logic from `src/api/client.ts`
-- There is an existing retry helper in `src/lib/retry.ts`
-- Tests covering auth refresh behavior exist in `tests/auth/refresh.test.ts`
-- Public callers seem to depend on current error shape and current refresh entrypoint
+<!-- codex-handoff | 2026-04-13 -->
 
-## Structured brief
-
-### Goal
+# Goal
 
 Add retry with exponential backoff to the token refresh path used during authenticated API requests.
 
-### Repo context
+# Repo context
 
 The current token refresh implementation appears centered in `src/auth/refresh.ts`, and is likely invoked from the authenticated API client in `src/api/client.ts`. There is already a reusable retry utility in `src/lib/retry.ts`. Existing tests for refresh behavior appear in `tests/auth/refresh.test.ts`.
 
-### Files inspected
+# Files inspected
 
 - `read`: `src/auth/refresh.ts`
 - `read`: `src/api/client.ts`
@@ -33,7 +27,7 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - `searched`: `src/auth/**`
 - `searched`: `tests/auth/**`
 
-### Constraints
+# Constraints
 
 - Reuse the existing retry helper if it is a good fit
 - Do not change the public API of the auth client
@@ -41,24 +35,24 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - Keep retry logic scoped to token refresh only
 - Avoid introducing retry loops around all API requests
 
-### Do not touch
+# Do not touch
 
 - Public auth client interfaces exposed to external callers
 - Token storage semantics outside the refresh path
 
-### Non-goals
+# Non-goals
 
 - Do not redesign authentication flow
 - Do not change token storage semantics
 - Do not add retry behavior to unrelated network calls
 - Do not refactor broad auth architecture unless necessary for a small extraction
 
-### Ambiguities
+# Ambiguities
 
 - It still needs confirmation whether `src/lib/retry.ts` can express the desired backoff policy without extension
 - It is not yet proven whether all transient refresh failures share the same error classification path
 
-### Acceptance criteria
+# Acceptance criteria
 
 - Token refresh retries on transient failure using exponential backoff
 - Retry count and delay policy are explicit in code
@@ -66,14 +60,14 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - Existing authenticated request flow continues to behave the same from the caller perspective
 - Tests cover success after retry, terminal failure, and non-retriable failure behavior
 
-### Files likely involved
+# Files likely involved
 
 - `src/auth/refresh.ts`
 - `src/api/client.ts`
 - `src/lib/retry.ts`
 - `tests/auth/refresh.test.ts`
 
-### Test plan
+# Test plan
 
 - Update or add unit tests for refresh retry behavior
 - Verify success when the first refresh attempt fails transiently and a later one succeeds
@@ -81,7 +75,7 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - Verify non-retriable errors do not loop
 - Run targeted auth-related tests first, then broader affected suite if available
 
-### Review focus
+# Review focus
 
 - Is retry scoped only to refresh, not all outbound requests?
 - Are backoff parameters reasonable and readable?
@@ -89,7 +83,7 @@ The current token refresh implementation appears centered in `src/auth/refresh.t
 - Are public behavior and error contracts preserved?
 - Are tests deterministic rather than timing-fragile?
 
-## Final CODEX_HANDOFF
+# CODEX_HANDOFF
 
 Implement retry with exponential backoff for token refresh in the authenticated request flow.
 Start by confirming whether `src/lib/retry.ts` can be reused directly. Prefer reusing it over introducing a second retry abstraction.

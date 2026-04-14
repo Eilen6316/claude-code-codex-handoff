@@ -6,10 +6,6 @@
 
 A Claude Code plugin for repo-grounded handoff to Codex.
 
-## Demo
-
-![codex-handoff demo](./docs/assets/demo.gif)
-
 Instead of sending a rough coding idea straight to Codex, this plugin lets Claude
 inspect the repository first, identify relevant files and constraints, and produce
 a structured implementation brief for Codex to execute.
@@ -43,7 +39,7 @@ the entire pipeline runs automatically with a single command. No manual copy-pas
 
 - `codex-handoff:repo-analyst`
   A read-only subagent for repository inspection, architecture mapping, constraints, and test planning.
-- `/codex-handoff:handoff [--no-exec] [task]`
+- `/codex-handoff:handoff [--no-exec] [--background] [--model <model>] [--effort <level>] [task]`
   Generates a repo-grounded `CODEX_HANDOFF` brief, then automatically hands it to Codex
   for implementation and triggers a review when done. Use `--no-exec` to only generate
   the handoff without invoking Codex.

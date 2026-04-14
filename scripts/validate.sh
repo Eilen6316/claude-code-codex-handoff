@@ -76,9 +76,67 @@ plugin_version="$(jq -r '.version' .claude-plugin/plugin.json)"
   echo "Plugin version is missing" >&2
   exit 1
 }
+marketplace_version="$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)"
+if [[ "$plugin_version" != "$marketplace_version" ]]; then
+  echo "Version mismatch: plugin.json=$plugin_version, marketplace.json=$marketplace_version" >&2
+  exit 1
+fi
 
 echo "==> Running fixture evals"
 bash scripts/eval-fixtures.sh
+
+echo "==> Checking pipeline contract"
+# Cross-skill references
+grep -q 'codex:rescue' skills/handoff/SKILL.md || {
+  echo "Handoff skill does not reference codex:rescue" >&2
+  exit 1
+}
+grep -q 'codex-handoff:review' skills/handoff/SKILL.md || {
+  echo "Handoff skill does not reference codex-handoff:review" >&2
+  exit 1
+}
+# Flags
+grep -q '\-\-no-exec' skills/handoff/SKILL.md || {
+  echo "Handoff skill missing --no-exec flag" >&2
+  exit 1
+}
+for flag in "--background" "--model" "--effort"; do
+  grep -q -- "$flag" skills/handoff/SKILL.md || {
+    echo "Handoff skill missing flag: $flag" >&2
+    exit 1
+  }
+done
+# File linkage
+grep -q '.codex-handoff/latest.md' skills/handoff/SKILL.md || {
+  echo "Handoff skill does not reference .codex-handoff/latest.md" >&2
+  exit 1
+}
+grep -q '.codex-handoff/latest.md' skills/review/SKILL.md || {
+  echo "Review skill does not reference .codex-handoff/latest.md" >&2
+  exit 1
+}
+# No hardcoded version in metadata
+if grep -q 'codex-handoff v[0-9]' skills/handoff/SKILL.md; then
+  echo "Handoff skill has hardcoded version in metadata comment" >&2
+  exit 1
+fi
+for ex in docs/examples/*-handoff.*.md; do
+  if grep -q 'codex-handoff v[0-9]' "$ex"; then
+    echo "Example $ex has hardcoded version in metadata comment" >&2
+    exit 1
+  fi
+done
+# Skill tool permission
+handoff_frontmatter="$(sed -n '1,/^---$/{ /^---$/d; p; }' skills/handoff/SKILL.md | tail -n +2)"
+if ! echo "$handoff_frontmatter" | grep -q 'allowed-tools:.*Skill'; then
+  echo "Handoff skill frontmatter missing 'Skill' in allowed-tools" >&2
+  exit 1
+fi
+# CODEX_HANDOFF boundary marker
+grep -q '# CODEX_HANDOFF' skills/handoff/SKILL.md || {
+  echo "Handoff skill missing # CODEX_HANDOFF boundary marker" >&2
+  exit 1
+}
 
 if command -v claude >/dev/null 2>&1; then
   echo "==> Running Claude CLI plugin validation"

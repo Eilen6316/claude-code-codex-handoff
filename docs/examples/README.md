@@ -1,7 +1,8 @@
 # Examples
 
-This directory contains concrete examples of what a good repo-grounded handoff
-looks like.
+This directory contains examples of what a repo-grounded handoff and review might
+look like. The structure is flexible — these show one way to organize the output
+for a moderately complex task.
 
 English:
 
@@ -14,18 +15,3 @@ English:
 - [功能开发 handoff](./feature-handoff.zh-CN.md)
 - [Bug 修复 handoff](./bugfix-handoff.zh-CN.md)
 - [Review 输出示例](./review-output.zh-CN.md)
-
-Each example includes:
-
-- a raw user request
-- repository findings
-- files inspected
-- a structured brief
-- a final `CODEX_HANDOFF`
-
-Review examples include:
-
-- a review request
-- implementation context
-- a structured review result
-- a fixed verdict

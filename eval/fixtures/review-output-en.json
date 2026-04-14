@@ -3,15 +3,10 @@
   "language": "en",
   "example_file": "docs/examples/review-output.en.md",
   "required_strings": [
-    "## Raw review request",
-    "## Implementation context",
-    "## Structured review result",
-    "### Verdict",
+    "Verdict",
     "MINOR_FIX",
-    "### Summary",
-    "### Findings",
-    "### Regression risks",
-    "### Missing tests",
-    "### Next step"
+    "Handoff coverage",
+    "MET",
+    "NOT_MET"
   ]
 }

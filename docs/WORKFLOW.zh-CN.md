@@ -2,17 +2,44 @@
 
 ## 目标
 
-让 Claude 负责“读代码、定范围、写结构化 brief、做审查”，让 Codex 负责“实现改动”。
+让 Claude 负责"读代码、定范围、写结构化 brief、做审查"，让 Codex 负责"实现改动"。
 
 ## 推荐流程
 
 1. 先把任务描述清楚。
 2. 运行 `/codex-handoff:handoff [任务]`。
-3. 让 Claude 通过 `repo-analyst` 读取仓库并整理上下文。
+3. Claude 通过 `repo-analyst` 读取仓库，生成结构化 `CODEX_HANDOFF`。
 4. 先看分析摘要，重点检查 `Files inspected` 和任何 `Ambiguities`。
-5. 把最后的 `CODEX_HANDOFF` 段落复制给 `/codex:rescue`。
-6. Codex 完成后，再运行 `/codex-handoff:review [范围]` 或 `/codex:review`。
+5. handoff 自动将 `CODEX_HANDOFF` 交给 `/codex:rescue`，由 Codex 实现。
+6. Codex 完成后，`/codex-handoff:review` 自动触发，审查实现结果。
 7. 根据固定 verdict 决定下一步：`APPROVE`、`MINOR_FIX` 或 `REWORK`。
+
+handoff 输出会保存到 `.codex-handoff/latest.md`，review 会回读这个文件来交叉检查
+验收标准、约束和审查重点。同时带时间戳的副本会存入 `.codex-handoff/history/` 方便追溯。
+
+## 手动模式
+
+使用 `--no-exec` 可以只生成 handoff 而不调用 Codex：
+
+```text
+/codex-handoff:handoff --no-exec [任务]
+```
+
+之后可以手动把 `CODEX_HANDOFF` 复制给 `/codex:rescue`，或者先审查 handoff 质量再决定是否执行。
+
+## Codex 执行控制
+
+可以传入以下参数控制 Codex 的执行方式：
+
+- `--background` — 后台运行 Codex
+- `--model <模型>` — 指定 Codex 模型（如 `gpt-5.4-mini`、`spark`）
+- `--effort <级别>` — 指定推理强度（`none` / `minimal` / `low` / `medium` / `high` / `xhigh`）
+
+示例：
+
+```text
+/codex-handoff:handoff --background --effort high 给 token refresh 流程增加重试
+```
 
 ## 适合使用的场景
 

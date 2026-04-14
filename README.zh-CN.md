@@ -6,10 +6,6 @@
 
 一个面向 Claude Code 的插件，用于把”模糊任务”变成”基于仓库上下文的结构化 handoff”，再交给 Codex 执行。
 
-## Demo
-
-![codex-handoff demo](./docs/assets/demo.gif)
-
 它解决的不是普通 prompt 润色问题，而是这个问题：
 
 `你 -> Claude 先读仓库 -> Claude 生成 CODEX_HANDOFF -> Codex 实现 -> Claude 审查`
@@ -39,7 +35,7 @@
 
 - `codex-handoff:repo-analyst`
   只读分析子代理，用于读代码、找相关文件、梳理结构、提炼约束、给出测试建议。
-- `/codex-handoff:handoff [--no-exec] [任务]`
+- `/codex-handoff:handoff [--no-exec] [--background] [--model <模型>] [--effort <级别>] [任务]`
   生成基于仓库上下文的结构化 `CODEX_HANDOFF`，然后自动交给 Codex 实现，
   实现完成后自动触发 review。使用 `--no-exec` 可以只生成 handoff 而不执行。
 - `/codex-handoff:review [范围]`

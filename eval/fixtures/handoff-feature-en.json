@@ -3,19 +3,9 @@
   "language": "en",
   "example_file": "docs/examples/feature-handoff.en.md",
   "required_strings": [
-    "## Raw user request",
-    "## Repository findings",
-    "### Goal",
-    "### Repo context",
-    "### Files inspected",
-    "### Constraints",
-    "### Do not touch",
-    "### Non-goals",
-    "### Ambiguities",
-    "### Acceptance criteria",
-    "### Files likely involved",
-    "### Test plan",
-    "### Review focus",
-    "## Final CODEX_HANDOFF"
+    "# CODEX_HANDOFF",
+    "codex-handoff |",
+    "Acceptance criteria",
+    "Test plan"
   ]
 }

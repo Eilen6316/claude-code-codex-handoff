@@ -31,6 +31,27 @@
 - Claude：规划、技术判断、验收标准、审查
 - Codex：具体实现
 
+## 上下文是怎么传递的
+
+Claude 和 Codex 是独立进程，它们共享的是**工作目录**（同一个 git 仓库），
+**不共享**对话历史、文件读取缓存或内部推理过程。
+
+当 handoff skill 调用 `/codex:rescue` 时，Codex 实际收到的只有：
+
+1. `# CODEX_HANDOFF` section 的文本内容（作为 `args` 字符串传入）
+2. 对同一个文件系统的访问权限（它会自己重新读文件）
+
+这意味着 handoff brief 的质量是减少 Codex 探索成本的核心杠杆。文件路径越精准、
+范围边界越清楚、验收标准越明确，Codex 需要自己重新发现的东西就越少。
+
+`.codex-handoff/` 目录仅用于 **Claude 侧的状态传递**：
+
+- `.codex-handoff/latest.md` — review skill 读取此文件，在审查 Codex 实现时
+  交叉验证验收标准和约束
+- `.codex-handoff/history/` — handoff 和 review 输出的带时间戳副本，用于追溯
+
+Codex 不会读取 `.codex-handoff/` 目录。
+
 ## 你会得到什么
 
 - `codex-handoff:repo-analyst`

@@ -35,6 +35,30 @@ Workflow:
 When the [Codex plugin](https://github.com/openai/codex-plugin-cc) is installed,
 the entire pipeline runs automatically with a single command. No manual copy-paste needed.
 
+## How context flows
+
+Claude and Codex run as independent processes. They share the **working directory**
+(the same git repository) but **not** conversation history, file read cache, or
+internal reasoning.
+
+When the handoff skill invokes `/codex:rescue`, Codex receives only:
+
+1. The text of the `# CODEX_HANDOFF` section (passed as the `args` string)
+2. Access to the same filesystem (it reads files on its own)
+
+This means the quality of the handoff brief is the primary lever for reducing
+Codex's exploration cost. The more precise the file paths, scope boundaries, and
+acceptance criteria, the less Codex needs to re-discover on its own.
+
+The `.codex-handoff/` directory is used for **Claude-side state passing** only:
+
+- `.codex-handoff/latest.md` — the review skill reads this to cross-reference
+  acceptance criteria and constraints when evaluating Codex's implementation
+- `.codex-handoff/history/` — timestamped copies of handoff and review outputs
+  for traceability
+
+Codex does not read from `.codex-handoff/`.
+
 ## What you get
 
 - `codex-handoff:repo-analyst`

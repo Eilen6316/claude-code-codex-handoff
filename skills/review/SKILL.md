@@ -18,21 +18,24 @@ Workflow:
    over style commentary.
 6. Match the user's language.
 
-The review must cover:
+The review must provide:
 - A verdict: exactly one of `APPROVE`, `MINOR_FIX`, or `REWORK`
-- A summary of what was implemented and how well it matches intent
-- Concrete findings (if any) — refer to file paths and symbols precisely
-- Regression risks
-- Missing tests
-- A clear next step that maps to the verdict:
+- A concise summary of what was implemented and how well it matches intent
+- Concrete findings when issues exist; refer to file paths and symbols precisely
+- Regression risks, if any
+- Missing tests, if any
+- A next step aligned with the verdict:
   `APPROVE` → ship or merge,
   `MINOR_FIX` → small follow-up changes,
   `REWORK` → revise before approval
-- If `.codex-handoff/latest.md` was available, a handoff coverage assessment that
-  lists each acceptance criterion and marks it MET, NOT_MET, or UNTESTED
 
-Organize the review however makes it clearest. The verdict must appear prominently
-at the top so it is easy to find.
+If `.codex-handoff/latest.md` is available and contains acceptance criteria, include
+a handoff coverage assessment that marks each criterion as `MET`, `NOT_MET`, or
+`UNTESTED`.
+
+If a category has no substantive content, say so briefly rather than inventing
+filler. Organize the review in whatever structure is clearest, but keep the verdict
+prominent near the top so it is easy to find.
 
 After generating the review, save it to
 `.codex-handoff/history/YYYY-MM-DD-HHMMSS-review.md`. Create the directory if needed.

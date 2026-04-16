@@ -34,6 +34,8 @@ required_files=(
   "docs/examples/review-output.en.md"
   "docs/examples/review-output.zh-CN.md"
   "scripts/eval-fixtures.sh"
+  "scripts/eval-fixtures.ps1"
+  "scripts/validate.ps1"
   "skills/handoff/SKILL.md"
   "skills/review/SKILL.md"
   "docs/WORKFLOW.en.md"

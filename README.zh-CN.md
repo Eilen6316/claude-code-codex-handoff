@@ -62,7 +62,9 @@ Codex 不会读取 `.codex-handoff/` 目录。
 - `/codex-handoff:review [范围]`
   手动触发的 review skill，用于在实现完成后做二次审查，并输出固定 verdict：`APPROVE`、`MINOR_FIX`、`REWORK`。
 - `scripts/validate.sh`
-  结构校验脚本，可本地运行，也方便接入你自己的 CI。
+  Bash 版结构校验脚本，可本地运行，也方便接入你自己的 CI。
+- `scripts/validate.ps1`
+  适用于 Windows / PowerShell 的对应版本。
 
 ## 安装
 
@@ -260,6 +262,15 @@ claude plugins validate .
 claude --plugin-dir . agents
 bash scripts/eval-fixtures.sh
 bash scripts/validate.sh
+```
+
+PowerShell:
+
+```powershell
+claude plugins validate .
+claude --plugin-dir . agents
+pwsh ./scripts/eval-fixtures.ps1
+pwsh ./scripts/validate.ps1
 ```
 
 验证脚本会检查：

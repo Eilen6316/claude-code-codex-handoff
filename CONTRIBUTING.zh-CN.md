@@ -21,6 +21,12 @@ cd claude-code-codex-handoff
 bash scripts/validate.sh
 ```
 
+PowerShell:
+
+```powershell
+pwsh ./scripts/validate.ps1
+```
+
 验证内容包括：
 
 - 所有必需文件是否存在
@@ -38,7 +44,7 @@ bash scripts/validate.sh
 ## Pull Request 流程
 
 1. Fork 本仓库，从 `main` 创建功能分支。
-2. 完成修改后运行 `bash scripts/validate.sh` 进行验证。
+2. 完成修改后运行 `bash scripts/validate.sh` 或 `pwsh ./scripts/validate.ps1` 进行验证。
 3. 如果添加了新示例，需要在 `eval/fixtures/` 下添加对应的 fixture。
 4. 如果修改了 skill 的章节结构，需要同时更新英文和中文示例。
 5. 向 `main` 发起 PR，清楚描述变更内容和原因。

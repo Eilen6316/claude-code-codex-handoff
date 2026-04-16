@@ -71,6 +71,8 @@ Codex does not read from `.codex-handoff/`.
   A manual review skill for checking the current implementation against intent, risks, and missing tests, with a fixed verdict: `APPROVE`, `MINOR_FIX`, or `REWORK`.
 - `scripts/validate.sh`
   Structural validation plus optional Claude CLI checks.
+- `scripts/validate.ps1`
+  PowerShell equivalent for Windows environments.
 
 ## Installation
 
@@ -268,6 +270,15 @@ claude plugins validate .
 claude --plugin-dir . agents
 bash scripts/eval-fixtures.sh
 bash scripts/validate.sh
+```
+
+PowerShell:
+
+```powershell
+claude plugins validate .
+claude --plugin-dir . agents
+pwsh ./scripts/eval-fixtures.ps1
+pwsh ./scripts/validate.ps1
 ```
 
 The validation script checks:

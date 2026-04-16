@@ -21,6 +21,12 @@ Before submitting a PR, run the full validation suite:
 bash scripts/validate.sh
 ```
 
+PowerShell:
+
+```powershell
+pwsh ./scripts/validate.ps1
+```
+
 This checks:
 
 - All required files exist
@@ -38,7 +44,7 @@ This checks:
 ## Pull request process
 
 1. Fork the repository and create a feature branch from `main`.
-2. Make your changes and verify with `bash scripts/validate.sh`.
+2. Make your changes and verify with `bash scripts/validate.sh` or `pwsh ./scripts/validate.ps1`.
 3. If you add a new example, add a matching fixture under `eval/fixtures/`.
 4. If you add or change a skill section, update both the English and Chinese examples.
 5. Open a PR against `main` with a clear description of what changed and why.
